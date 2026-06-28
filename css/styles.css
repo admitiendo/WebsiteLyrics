@@ -1,0 +1,51 @@
+.view.active {
+  display: block !important;
+}
+
+body {
+  background-color: #121212 !important; /* Color negro/gris oscuro */
+  color: #ffffff !important;           /* Texto blanco */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+.view {
+  background-color: #121212 !important;
+  min-height: 100vh;
+  display: none;
+}
+
+.lyrics-container {
+  height: 60vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.lyrics-container::-webkit-scrollbar { display: none; }
+
+.lyric-line {
+  transition: all 0.3s ease;
+  opacity: 0.3;
+  padding: 10px 0;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.lyric-line:hover {
+  color: #ffffff;
+  transform: scale(1.02);
+}
+
+.lyric-line.active {
+  opacity: 1;
+  color: #1db954;
+  font-weight: bold;
+  font-size: 1.75rem;
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: #1db954;
+  cursor: pointer;
+}
