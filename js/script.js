@@ -1,133 +1,179 @@
-let parsedLyrics = [];
+// ==========================================
+// 1. VARIABLES GLOBALES Y ELEMENTOS DEL DOM
+// ==========================================
 const audioPlayer = document.getElementById('audioPlayer');
 const progressBar = document.getElementById('progressBar');
 const playPauseBtn = document.getElementById('playPauseBtn');
 const playIcon = document.getElementById('playIcon');
 const pauseIcon = document.getElementById('pauseIcon');
-let searchResults = [];
-
-playPauseBtn.addEventListener('click', () => {
-  if (audioPlayer.paused) {
-    audioPlayer.play();
-    playIcon.classList.add('hidden');
-    pauseIcon.classList.remove('hidden');
-  } else {
-    audioPlayer.pause();
-    playIcon.classList.remove('hidden');
-    pauseIcon.classList.add('hidden');
-  }
-});
-
-// asegurar que el icono cambie si la canción termina sola
-audioPlayer.addEventListener('ended', () => {
-  playIcon.classList.remove('hidden');
-  pauseIcon.classList.add('hidden');
-});
-
-// -- seleccionar x parte de la letra
-
 const lyricsDisplay = document.getElementById('lyricsDisplay');
 
-lyricsDisplay.addEventListener('click', (e) => {
-  // Verificamos que el usuario haya hecho clic en un elemento que tenga la clase 'lyric-line'
-  const targetLine = e.target.closest('.lyric-line');
+let parsedLyrics = [];
+let searchResults = [];
+let currentActiveIndex = -1; // Guarda la línea actual para no sobrecargar el DOM
 
-  if (targetLine) {
-    // Obtenemos el tiempo del atributo data-time
-    const time = parseFloat(targetLine.getAttribute('data-time'));
+// ==========================================
+// 2. CONTROLES DEL REPRODUCTOR
+// ==========================================
 
-    if (!isNaN(time)) {
-      audioPlayer.currentTime = time; // Saltamos al tiempo
-      audioPlayer.play();            // Reproducimos automáticamente
-    }
+// actualiza los iconos de play/pausa
+function updatePlayIcons() {
+  if (audioPlayer.paused) {
+    playIcon.classList.remove('hidden');
+    pauseIcon.classList.add('hidden');
+  } else {
+    playIcon.classList.add('hidden');
+    pauseIcon.classList.remove('hidden');
   }
+}
+
+// botón pausa y play
+playPauseBtn.addEventListener('click', () => {
+  audioPlayer.paused ? audioPlayer.play() : audioPlayer.pause();
+  updatePlayIcons();
 });
 
-// --- navegar entre vistas ---
+// cuando la canción termina
+audioPlayer.addEventListener('ended', updatePlayIcons);
+
+// barra de progreso (arrastrar)
+progressBar.addEventListener('input', () => {
+  audioPlayer.currentTime = progressBar.value;
+});
+
+// ==========================================
+// 3. NAVEGACIÓN Y UTILIDADES
+// ==========================================
+
 function showView(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(viewId).classList.add('active');
 }
 
-// ---  Convertir la duracion (segundos totales) a MINUTOS:SEGUNDOS ---
-
-function convertSecondsToMinutesAndSeconds(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+// formato de tiempo (Minutos:Segundos)
+function formatTime(seconds) {
+  if (isNaN(seconds)) return "0:00";
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return `${min}:${sec.toString().padStart(2, '0')}`;
 }
 
-// --- conseguir la imagen del album ---
+// reiniciar
+function resetApp() {
+  audioPlayer.pause();
+  audioPlayer.src = '';
+  document.getElementById('lyricsDisplay').innerHTML = '';
+  document.getElementById('displayTitle').innerText = '';
+  document.getElementById('albumCover').classList.add('hidden');
+  document.getElementById('searchInput').value = '';
+  currentActiveIndex = -1;
+  showView('view-search');
+}
+
+// ==========================================
+// 4. BÚSQUEDA Y CARGA DE DATOS
+// ==========================================
 
 async function fetchCoverArt(artist, track) {
-  // Buscamos en iTunes el nombre de la canción y artista
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(artist + " " + track)}&entity=song&limit=1`;
-
   try {
     const response = await fetch(url);
     const data = await response.json();
-
     if (data.results && data.results.length > 0) {
-      // iTunes devuelve una imagen de 100x100, cambiamos la URL a 600x600 para que se vea bien
       return data.results[0].artworkUrl100.replace('100x100bb.jpg', '600x600bb.jpg');
     }
   } catch (e) {
-    console.error("No se pudo obtener la portada:", e);
+    console.error("Error obteniendo portada:", e);
   }
-  return null; // Retorna null si no encuentra nada
+  return null;
 }
 
-// --- busqueda de cancion ---
 async function buscarCancion() {
   const query = document.getElementById('searchInput').value;
   const list = document.getElementById('resultsList');
-  list.innerHTML = 'Buscando...';
 
-  const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
-  searchResults = await res.json();
-  list.innerHTML = '';
+  if (!query) return; // evita buscar si el input está vacío
 
-  searchResults.forEach((track, index) => {
-    const div = document.createElement('div');
-    div.className = 'p-3 bg-gray-800 hover:bg-gray-700 cursor-pointer rounded-lg text-sm';
-    div.innerText = `${track.trackName} - ${track.artistName} - ${convertSecondsToMinutesAndSeconds(track.duration)}`;
-    // Dentro de tu función de click en el resultado
-    div.onclick = async () => { // <--- Asegúrate de añadir 'async' aquí
-      if(!track.syncedLyrics) return alert("No hay letra sincronizada.");
+  list.innerHTML = '<p class="text-gray-400">Buscando...</p>';
 
-      const coverUrl = await fetchCoverArt(track.artistName, track.trackName);
+  try {
+    const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`);
+    searchResults = await res.json();
+    list.innerHTML = '';
 
-      const coverImg = document.getElementById('albumCover');
-      if (coverUrl) {
-        coverImg.src = coverUrl;
-        coverImg.classList.remove('hidden');
-      } else {
-        coverImg.classList.add('hidden');
-      }
+    searchResults.forEach((track) => {
+      const div = document.createElement('div');
+      div.className = 'p-3 bg-[#181818] hover:bg-gray-700 cursor-pointer rounded-lg text-sm transition';
+      div.innerText = `${track.trackName} - ${track.artistName} - ${formatTime(track.duration)}`;
 
-      parseLRC(track.syncedLyrics);
-      document.getElementById('selectedTitle').innerText = track.trackName;
-      document.getElementById('displayTitle').innerText = track.trackName;
+      div.onclick = async () => {
+        if (!track.syncedLyrics) return alert("Esta canción no tiene letra sincronizada en la base de datos.");
+// ... código anterior ...
+        const coverUrl = await fetchCoverArt(track.artistName, track.trackName);
 
-      showView('view-upload');
-    };
-    list.appendChild(div);
-  });
+        const coverImg = document.getElementById('albumCover');
+        if (coverUrl) {
+          // 1. FUNDAMENTAL: Permitir extraer color de otra web sin bloqueos de seguridad
+          coverImg.crossOrigin = "Anonymous";
+
+          // 2. Extraer el color cuando la imagen termine de cargar
+          coverImg.onload = () => {
+            try {
+              const colorThief = new ColorThief();
+              // Devuelve un arreglo con colores RGB [R, G, B]
+              const color = colorThief.getColor(coverImg);
+
+              // 3. Cambiar la variable CSS en todo el documento
+              const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+              document.documentElement.style.setProperty('--accent-color', rgbColor);
+
+            } catch (e) {
+              console.warn("No se pudo extraer el color, usando color por defecto.", e);
+              document.documentElement.style.setProperty('--accent-color', '#1db954');
+            }
+          };
+
+          // Asignamos la imagen (esto dispara el evento onload de arriba)
+          coverImg.src = coverUrl;
+          coverImg.classList.remove('hidden');
+        } else {
+          coverImg.classList.add('hidden');
+          document.documentElement.style.setProperty('--accent-color', '#1db954');
+        }
+        // ... resto del código (parseLRC, showView, etc.) ...
+
+        parseLRC(track.syncedLyrics);
+        document.getElementById('selectedTitle').innerText = track.trackName;
+        document.getElementById('displayTitle').innerText = track.trackName;
+        showView('view-upload');
+      };
+
+      list.appendChild(div);
+    });
+  } catch (error) {
+    list.innerHTML = '<p class="text-red-500">Error al buscar la canción.</p>';
+  }
 }
 
-// --- cargar el mp3 de la cancion ---
+// cargar MP3 local
 document.getElementById('audioUpload').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (file) {
     audioPlayer.src = URL.createObjectURL(file);
     showView('view-player');
     audioPlayer.play();
+    updatePlayIcons();
   }
 });
 
-// --- sincronizacion ---
+// ==========================================
+// 5. LÓGICA DE LETRAS (LRC) Y SINCRONIZACIÓN
+// ==========================================
+
 function parseLRC(lrcText) {
   parsedLyrics = [];
+  currentActiveIndex = -1; // Reseteamos el índice al cargar nueva canción
+
   const lines = lrcText.split('\n');
   const timeRegex = /\[(\d{2}):(\d{2}\.\d{2,3})\](.*)/;
 
@@ -140,61 +186,59 @@ function parseLRC(lrcText) {
     }
   });
 
-  const container = document.getElementById('lyricsDisplay');
-  // AQUÍ ESTÁ EL CAMBIO: Agregamos data-time y clases visuales
-  container.innerHTML = parsedLyrics.map((l, i) =>
-    `<div class="lyric-line cursor-pointer hover:text-white transition" id="line-${i}" data-time="${l.time}">
+  lyricsDisplay.innerHTML = parsedLyrics.map((l, i) =>
+    `<div class="lyric-line cursor-pointer hover:text-white transition p-2" id="line-${i}" data-time="${l.time}">
        ${l.text}
      </div>`
   ).join('');
 }
 
+// saltar a tiempo específico al hacer clic en la letra
+lyricsDisplay.addEventListener('click', (e) => {
+  const targetLine = e.target.closest('.lyric-line');
+  if (targetLine) {
+    const time = parseFloat(targetLine.getAttribute('data-time'));
+    if (!isNaN(time)) {
+      audioPlayer.currentTime = time;
+      audioPlayer.play();
+      updatePlayIcons(); // Actualizamos el botón de pausa
+    }
+  }
+});
+
+// metadatos cargados (Duración total)
 audioPlayer.addEventListener('loadedmetadata', () => {
   progressBar.max = audioPlayer.duration;
   document.getElementById('totalTime').innerText = formatTime(audioPlayer.duration);
 });
 
+// sincronización en tiempo real
 audioPlayer.addEventListener('timeupdate', () => {
   progressBar.value = audioPlayer.currentTime;
   document.getElementById('currentTime').innerText = formatTime(audioPlayer.currentTime);
 
-  let activeIndex = -1;
-  parsedLyrics.forEach((line, i) => {
-    if (audioPlayer.currentTime >= line.time) activeIndex = i;
-  });
+  if (parsedLyrics.length === 0) return;
 
-  if (activeIndex !== -1) {
-    document.querySelectorAll('.lyric-line').forEach(el => el.classList.remove('active'));
-    const activeEl = document.getElementById(`line-${activeIndex}`);
-    if(activeEl) {
-      activeEl.classList.add('active');
-      activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  let newActiveIndex = -1;
+  for (let i = parsedLyrics.length - 1; i >= 0; i--) {
+    if (audioPlayer.currentTime >= parsedLyrics[i].time) {
+      newActiveIndex = i;
+      break;
     }
   }
+
+  if (newActiveIndex !== -1 && newActiveIndex !== currentActiveIndex) {
+    if (currentActiveIndex !== -1) {
+      const oldEl = document.getElementById(`line-${currentActiveIndex}`);
+      if (oldEl) oldEl.classList.remove('active', 'text-green-500', 'font-bold', 'scale-105');
+    }
+
+    const newEl = document.getElementById(`line-${newActiveIndex}`);
+    if (newEl) {
+      newEl.classList.add('active', 'text-green-500', 'font-bold', 'scale-105');
+      newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    currentActiveIndex = newActiveIndex;
+  }
 });
-
-progressBar.addEventListener('input', () => {
-  audioPlayer.currentTime = progressBar.value;
-});
-
-function formatTime(seconds) {
-  const min = Math.floor(seconds / 60);
-  const sec = Math.floor(seconds % 60);
-  return `${min}:${sec.toString().padStart(2, '0')}`;
-}
-
-function resetApp() {
-  // Detener audio
-  const audio = document.getElementById('audioPlayer');
-  audio.pause();
-  audio.src = '';
-
-  // Volver a vista de búsqueda
-  showView('view-search');
-
-  // Limpiar campos
-  document.getElementById('lyricsDisplay').innerHTML = '';
-  document.getElementById('displayTitle').innerText = '';
-  document.getElementById('albumCover').classList.add('hidden');
-  document.getElementById('searchInput').value = '';
-}

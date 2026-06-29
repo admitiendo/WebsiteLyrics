@@ -1,51 +1,82 @@
+/* ==========================================
+   1. VARIABLES (facil configuración de colores)
+   ========================================== */
+:root {
+  --bg-color: #553232;     /* Fondo oscuro */
+  --text-color: #ffffff;   /* Texto principal */
+  --accent-color: #b9a41d; /* Color dominante de la portada */
+}
+
+/* ==========================================
+   2. ESTILOS GLOBALES
+   ========================================== */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
+}
+
+/* ==========================================
+   3. VISTAS Y CONTENEDORES
+   ========================================== */
+.view {
+  display: none;
+  min-height: 100vh;
+  background-color: var(--bg-color) !important;
+}
+
 .view.active {
   display: block !important;
 }
 
-body {
-  background-color: #121212 !important; /* Color negro/gris oscuro */
-  color: #ffffff !important;           /* Texto blanco */
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-}
-
-.view {
-  background-color: #121212 !important;
-  min-height: 100vh;
-  display: none;
-}
-
+/* ==========================================
+   4. SECCIÓN DE LETRAS (LYRICS)
+   ========================================== */
 .lyrics-container {
   height: 60vh;
   overflow-y: auto;
   scroll-behavior: smooth;
+  scrollbar-width: none;
 }
 
-.lyrics-container::-webkit-scrollbar { display: none; }
+.lyrics-container::-webkit-scrollbar {
+  display: none;
+}
 
+/* Letras inactivas (ya cantadas o por cantar) */
 .lyric-line {
-  transition: all 0.3s ease;
-  opacity: 0.3;
-  padding: 10px 0;
+  padding: 15px 0;
   font-size: 1.25rem;
   cursor: pointer;
+  transition: all 1s ease;
+
+  /* AQUÍ ESTÁ LA MAGIA */
+  color: var(--accent-color);  /* Usamos el color de la portada */
+  filter: brightness(0.4);     /* Lo oscurecemos al 40% de su luz original */
 }
 
+/* Al pasar el mouse por encima */
 .lyric-line:hover {
-  color: #ffffff;
-  transform: scale(1.02);
+  color: var(--accent-color);
+  filter: brightness(0.7);     /* Se ilumina un poco (70%) para invitar al clic */
+  transform: scale(1.05);
 }
 
+/* La línea que está sonando AHORA */
 .lyric-line.active {
-  opacity: 1;
-  color: #1db954;
-  font-weight: bold;
   font-size: 1.75rem;
+  font-weight: bold;
+  color: var(--accent-color);
+  filter: brightness(1);       /* Color puro, brillante y al 100% de luz */
 }
 
-input[type=range] {
+/* ==========================================
+   5. CONTROLES INTERACTIVOS
+   ========================================== */
+input[type="range"] {
   width: 100%;
-  accent-color: #1db954;
   cursor: pointer;
+  accent-color: var(--accent-color);
 }
