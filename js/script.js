@@ -7,6 +7,7 @@ const playPauseBtn = document.getElementById('playPauseBtn');
 const playIcon = document.getElementById('playIcon');
 const pauseIcon = document.getElementById('pauseIcon');
 const lyricsDisplay = document.getElementById('lyricsDisplay');
+const colorThief = new ColorThief();
 
 let parsedLyrics = [];
 let searchResults = [];
@@ -107,8 +108,10 @@ async function buscarCancion() {
       div.innerText = `${track.trackName} - ${track.artistName} - ${formatTime(track.duration)}`;
 
       div.onclick = async () => {
-        if (!track.syncedLyrics) return alert("Esta canción no tiene letra sincronizada en la base de datos.");
-// ... código anterior ...
+        if (!track.syncedLyrics) {
+          list.innerHTML = '<p class="text-yellow-400 text-sm p-2">⚠️ Esta canción no tiene letra sincronizada.</p>';
+          return;
+        }
         const coverUrl = await fetchCoverArt(track.artistName, track.trackName);
 
         const coverImg = document.getElementById('albumCover');
@@ -119,13 +122,20 @@ async function buscarCancion() {
           // 2. Extraer el color cuando la imagen termine de cargar
           coverImg.onload = () => {
             try {
-              const colorThief = new ColorThief();
-              // Devuelve un arreglo con colores RGB [R, G, B]
               const color = colorThief.getColor(coverImg);
 
               // 3. Cambiar la variable CSS en todo el documento
               const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
               document.documentElement.style.setProperty('--accent-color', rgbColor);
+              const brightenChannel = (value) =>
+                Math.min(255, Math.round(value + (percent / 100) * (255 - value)));
+
+              colorR = brightenChannel(color[0]);
+              colorG = brightenChannel(color[1]);
+              colorB = brightenChannel(color[2]);
+
+              const rgbColorShadow = `rgb(${colorR}, ${colorG}, ${colorB})`;
+              document.documentElement.style.setProperty('--shadowcolor', rgbColorShadow)
 
             } catch (e) {
               console.warn("No se pudo extraer el color, usando color por defecto.", e);
@@ -140,11 +150,11 @@ async function buscarCancion() {
           coverImg.classList.add('hidden');
           document.documentElement.style.setProperty('--accent-color', '#1db954');
         }
-        // ... resto del código (parseLRC, showView, etc.) ...
 
         parseLRC(track.syncedLyrics);
         document.getElementById('selectedTitle').innerText = track.trackName;
         document.getElementById('displayTitle').innerText = track.trackName;
+        document.getElementById('duration').innerText = formatTime(track.duration);
         showView('view-upload');
       };
 
@@ -161,7 +171,7 @@ document.getElementById('audioUpload').addEventListener('change', (e) => {
   if (file) {
     audioPlayer.src = URL.createObjectURL(file);
     showView('view-player');
-    audioPlayer.play();
+    audioPlayer.play().catch(err => console.warn("Autoplay bloqueado: ", err));
     updatePlayIcons();
   }
 });
@@ -230,12 +240,12 @@ audioPlayer.addEventListener('timeupdate', () => {
   if (newActiveIndex !== -1 && newActiveIndex !== currentActiveIndex) {
     if (currentActiveIndex !== -1) {
       const oldEl = document.getElementById(`line-${currentActiveIndex}`);
-      if (oldEl) oldEl.classList.remove('active', 'text-green-500', 'font-bold', 'scale-105');
+      if (oldEl) oldEl.classList.remove('active');
     }
 
     const newEl = document.getElementById(`line-${newActiveIndex}`);
     if (newEl) {
-      newEl.classList.add('active', 'text-green-500', 'font-bold', 'scale-105');
+      newEl.classList.add('active');
       newEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 

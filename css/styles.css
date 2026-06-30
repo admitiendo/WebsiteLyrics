@@ -5,6 +5,7 @@
   --bg-color: #553232;     /* Fondo oscuro */
   --text-color: #ffffff;   /* Texto principal */
   --accent-color: #b9a41d; /* Color dominante de la portada */
+  --shadowcolor: #b9a41d;
 }
 
 /* ==========================================
@@ -48,28 +49,25 @@ body {
 /* Letras inactivas (ya cantadas o por cantar) */
 .lyric-line {
   padding: 15px 0;
+  color: var(--accent-color);
   font-size: 1.25rem;
   cursor: pointer;
-  transition: all 1s ease;
-
-  /* AQUÍ ESTÁ LA MAGIA */
-  color: var(--accent-color);  /* Usamos el color de la portada */
-  filter: brightness(0.4);     /* Lo oscurecemos al 40% de su luz original */
+  transition: filter 0.4s ease, font-size 0.4s ease, transform 0.5s ease;
+  filter: brightness(0.6);
 }
 
-/* Al pasar el mouse por encima */
 .lyric-line:hover {
   color: var(--accent-color);
-  filter: brightness(0.7);     /* Se ilumina un poco (70%) para invitar al clic */
+  filter: brightness(0.7);
   transform: scale(1.05);
 }
 
-/* La línea que está sonando AHORA */
 .lyric-line.active {
   font-size: 1.75rem;
   font-weight: bold;
-  color: var(--accent-color);
-  filter: brightness(1);       /* Color puro, brillante y al 100% de luz */
+  filter: brightness(1);
+  transform: scale(1.05);
+  text-shadow: 0 0 19px var(--shadowcolor);
 }
 
 /* ==========================================
