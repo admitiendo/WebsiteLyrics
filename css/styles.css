@@ -43,10 +43,35 @@ body::-webkit-scrollbar {
   z-index: 9999;
 }
 
+.portadaAlbum {
+  position: relative;
+  top: 60px
+}
+
 .displayTitleA {
-  font-size: x-large;
+  font-family: Apparat, serif;
+  filter: brightness(2);
+  font-size: 30px;
   color: var(--accent-color) !important;
-  text-shadow: 0 0 19px var(--shadow-color);
+  text-shadow: 0 0 19px var(--accent-color);
+  position: relative;
+  top: 60px;
+  font-weight: 600;
+  text-align: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  letter-spacing: 2px;
+}
+
+
+.displayArtist {
+  font-family: Apparat, serif;
+  filter: brightness(2.5);
+  font-size: 40px;
+  top: 60px;
+  color: var(--accent-color) !important;
+  text-shadow: 0 0 19px var(--accent-color);
+  position: relative;
   font-weight: 600;
   text-align: center;
   padding-left: 0.5rem;
@@ -68,12 +93,14 @@ body::-webkit-scrollbar {
   min-height: 100vh;
   background-color: transparent !important;
   transition: opacity 0.5s ease, transform 0.5s ease;
-  transform: translateY(10px);
+  transform: translateY(10px) translateX(-180px) !important;
 }
 
 .mt-8 {
+  position: fixed;
+  align-items: center;
   background-color: var(--bg-color) !important;
-  opacity: 0.7;
+  opacity: 0.5;
 }
 
 .view.visible { display: block; }
@@ -99,6 +126,7 @@ body::-webkit-scrollbar {
    ========================================== */
 .lyrics-container {
   height: 60vh;
+  width: 1050px !important;
   overflow-y: auto;
   background: transparent;
   scroll-behavior: smooth;
@@ -111,9 +139,10 @@ body::-webkit-scrollbar {
 
 /* Letras inactivas (ya cantadas o por cantar) */
 .lyric-line {
+  font-family: Apparat_Black, serif;
   padding: 15px 0;
   color: var(--accent-color);
-  font-size: 1.25rem;
+  font-size: 2rem;
   cursor: pointer;
   transition: filter 0.4s ease, font-size 0.4s ease, transform 0.5s ease;
   text-shadow: 0 0 4px var(--accent-color);
@@ -127,9 +156,10 @@ body::-webkit-scrollbar {
 }
 
 .lyric-line.active {
-  font-size: 1.75rem;
+  font-family: Apparat_Black, serif;
+  font-size: 2.75rem;
   font-weight: bold;
-  filter: brightness(2.5);
+  filter: brightness(2.3);
   transform: scale(1.2);
   text-shadow: 0 0 19px var(--shadow-color);
 }
@@ -185,4 +215,13 @@ input[type="range"] {
 @keyframes spinButton {
   from { rotate: 0deg; }
   to { rotate: 360deg; }
+}
+
+@font-face {
+  font-family: 'Apparat';
+  src: url('font/fonnts.com-Apparat_Regular.otf') format('otf'),
+  url('font/fonnts.com-Apparat_Regular.otf') format('otf');
+}
+body {
+  font-family: 'Apparat', serif;
 }

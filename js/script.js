@@ -174,6 +174,7 @@ async function buscarCancion() {
         parseLRC(track.syncedLyrics);
         document.getElementById('selectedTitle').innerText = track.trackName;
         document.getElementById('displayTitle').innerText = track.trackName;
+        document.getElementById('displayArtist').innerText = track.artistName;
         document.getElementById('duration').innerText = formatTime(track.duration);
         showView('view-upload');
       };
@@ -294,7 +295,7 @@ function createFallingCovers(coverUrl, containerId = 'fallingCoversContainer') {
   if (!container) return;
   container.innerHTML = '';
 
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 35; i++) {
     const img = document.createElement('img');
     img.src = coverUrl;
     img.classList.add('falling-cover');
@@ -305,7 +306,7 @@ function createFallingCovers(coverUrl, containerId = 'fallingCoversContainer') {
     const delay    = -(Math.random() * duration);     // ya empezadas al cargar
     const rotStart = (Math.random() - 0.5) * 60;     // rotación inicial
     const rotEnd   = rotStart + (Math.random() - 0.5) * 180;
-    const opacity  = Math.random() * 0.15 + 0.2;     // 0.10–0.35, sutil
+    const opacity  = Math.random() * 0.10 + 0.35;     // 0.10–0.35, sutil
 
     img.style.cssText = `
       width:${size}px; height:${size}px;
