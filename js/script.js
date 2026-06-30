@@ -305,7 +305,7 @@ function createFallingCovers(coverUrl, containerId = 'fallingCoversContainer') {
     const delay    = -(Math.random() * duration);     // ya empezadas al cargar
     const rotStart = (Math.random() - 0.5) * 60;     // rotación inicial
     const rotEnd   = rotStart + (Math.random() - 0.5) * 180;
-    const opacity  = Math.random() * 0.25 + 0.2;     // 0.10–0.35, sutil
+    const opacity  = Math.random() * 0.15 + 0.2;     // 0.10–0.35, sutil
 
     img.style.cssText = `
       width:${size}px; height:${size}px;
@@ -335,60 +335,3 @@ window.addEventListener('load', () => {
     }, 700);
   }, 1500);
 });
-
-function hexToRgb(hex) {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
-}
-
-function rgbToHex(r, g, b) {
-  return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
-}
-
-/**
- * Brightens a hex color by a given percentage.
- * @param {string} hex - The color in hex format (#RRGGBB or #RGB).
- * @param {number} percent - Percentage to brighten (0–100).
- * @returns {string} - The brightened hex color.
- * @throws {Error} - If the hex format or percentage is invalid.
- */
-function brightenHexColor(hex, percent) {
-  if (typeof hex !== 'string') {
-    throw new Error('Hex color must be a string.');
-  }
-  if (typeof percent !== 'number' || isNaN(percent) || percent < 0) {
-    throw new Error('Percentage must be a non-negative number.');
-  }
-
-  // Remove '#' if present
-  let cleanHex = hex.replace(/^#/, '');
-
-  // Expand shorthand (#RGB → #RRGGBB)
-  if (cleanHex.length === 3) {
-    cleanHex = cleanHex.split('').map(c => c + c).join('');
-  }
-
-  // Validate hex format
-  if (!/^[0-9A-Fa-f]{6}$/.test(cleanHex)) {
-    throw new Error('Invalid hex color format.');
-  }
-
-  // Convert hex to RGB
-  let r = parseInt(cleanHex.substring(0, 2), 16);
-  let g = parseInt(cleanHex.substring(2, 4), 16);
-  let b = parseInt(cleanHex.substring(4, 6), 16);
-
-  // Brighten each channel
-  const factor = percent / 100;
-  r = Math.min(255, Math.round(r + (255 - r) * factor));
-  g = Math.min(255, Math.round(g + (255 - g) * factor));
-  b = Math.min(255, Math.round(b + (255 - b) * factor));
-
-  // Convert back to hex
-  const toHex = (value) => value.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-}
