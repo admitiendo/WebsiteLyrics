@@ -155,7 +155,7 @@ async function buscarCancion() {
               const rgbColor = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
               document.documentElement.style.setProperty('--accent-color', rgbColor);
               document.documentElement.style.setProperty('--shadow-color', rgbColor);
-
+              document.title = `${nombreCancion} - ${artista}`;
             } catch (e) {
               console.warn("No se pudo extraer el color, usando color por defecto.", e);
               document.documentElement.style.setProperty('--accent-color', '#1db954');
