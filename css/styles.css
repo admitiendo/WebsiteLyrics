@@ -5,31 +5,80 @@
   --bg-color: #553232;     /* Fondo oscuro */
   --text-color: #ffffff;   /* Texto principal */
   --accent-color: #b9a41d; /* Color dominante de la portada */
-  --shadowcolor: #b9a41d;
+  --shadow-color: #b9a41d;
+  --op: 0.15;
+  --rot-end: 0;
+  --rot-start: 360;
+
+  --btn-opacity: 0.7;
 }
 
 /* ==========================================
    2. ESTILOS GLOBALES
    ========================================== */
-body {
+html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
   background-color: var(--bg-color) !important;
   color: var(--text-color) !important;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE y Edge antiguo */
+}
+
+body::-webkit-scrollbar {
+  display: none;                /* Chrome, Safari, Edge */
+}
+
+.displayTitleA {
+  font-size: x-large;
+  color: var(--accent-color) !important;
+  text-shadow: 0 0 19px var(--shadow-color);
+  font-weight: 600;
+  text-align: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  letter-spacing: 2px;
 }
 
 /* ==========================================
    3. VISTAS Y CONTENEDORES
    ========================================== */
-.view {
-  display: none;
-  min-height: 100vh;
-  background-color: var(--bg-color) !important;
+
+#loadingScreen {
+  transition: opacity 0.7s ease;
 }
 
+.view {
+  display: none;
+  opacity: 0;
+  min-height: 100vh;
+  background-color: transparent !important;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(10px);
+}
+
+.mt-8 {
+  background-color: var(--bg-color) !important;
+  opacity: 0.7;
+}
+
+.view.visible { display: block; }
+
 .view.active {
-  display: block !important;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#view-ready.visible {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==========================================
@@ -38,6 +87,7 @@ body {
 .lyrics-container {
   height: 60vh;
   overflow-y: auto;
+  background: transparent;
   scroll-behavior: smooth;
   scrollbar-width: none;
 }
@@ -67,7 +117,7 @@ body {
   font-weight: bold;
   filter: brightness(1);
   transform: scale(1.05);
-  text-shadow: 0 0 19px var(--shadowcolor);
+  text-shadow: 0 0 19px var(--shadow-color);
 }
 
 /* ==========================================
@@ -77,4 +127,48 @@ input[type="range"] {
   width: 100%;
   cursor: pointer;
   accent-color: var(--accent-color);
+}
+
+/* ==========================================
+   6. ANIMACION DEL ALBUM COVER
+   ========================================== */
+
+@keyframes albumFall {
+  0%   { transform: translateY(-150px) rotate(var(--rot-start)); opacity: 0; }
+  10%  { opacity: var(--op); }
+  90%  { opacity: var(--op); }
+  100% { transform: translateY(110vh) rotate(var(--rot-end)); opacity: 0; }
+}
+
+.falling-cover {
+  position: absolute;
+  top: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  animation: albumFall linear infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* ==========================================
+   7. ANIMACIÓN DEL BOTÓN PLAY/PAUSA
+   ========================================== */
+#playPauseBtn {
+  opacity: var(--btn-opacity);
+  animation: spinButton 4s linear infinite;
+  animation-play-state: paused;
+  transition: opacity 0.3s ease;
+}
+
+#playPauseBtn:hover {
+  opacity: 1;
+}
+
+#playPauseBtn.is-playing {
+  animation-play-state: running;
+}
+
+@keyframes spinButton {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
 }
