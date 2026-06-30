@@ -6,7 +6,7 @@
   --text-color: #ffffff;   /* Texto principal */
   --accent-color: #b9a41d; /* Color dominante de la portada */
   --shadow-color: #b9a41d;
-  --op: 0.15;
+  --op: 0;
   --rot-end: 0;
   --rot-start: 360;
 
@@ -28,6 +28,19 @@ html, body {
 
 body::-webkit-scrollbar {
   display: none;                /* Chrome, Safari, Edge */
+}
+
+.marca-agua {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  opacity: 0.4;/
+  font-size: 14px;
+  color: var(--text-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 .displayTitleA {
@@ -103,7 +116,8 @@ body::-webkit-scrollbar {
   font-size: 1.25rem;
   cursor: pointer;
   transition: filter 0.4s ease, font-size 0.4s ease, transform 0.5s ease;
-  filter: brightness(0.6);
+  text-shadow: 0 0 4px var(--accent-color);
+  filter: brightness(1.1);
 }
 
 .lyric-line:hover {
@@ -115,8 +129,8 @@ body::-webkit-scrollbar {
 .lyric-line.active {
   font-size: 1.75rem;
   font-weight: bold;
-  filter: brightness(1);
-  transform: scale(1.05);
+  filter: brightness(2.5);
+  transform: scale(1.2);
   text-shadow: 0 0 19px var(--shadow-color);
 }
 
